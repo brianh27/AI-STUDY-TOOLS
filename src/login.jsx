@@ -51,6 +51,7 @@ const Login=()=>{
         fix the read only edit window
         add more modes, chats?
         make auto detection for if the formatting is correct
+        <p>Also PLEASE Feel free to refer this to anyone. just send this link not the /Home one</p>
 
     </div>
     )

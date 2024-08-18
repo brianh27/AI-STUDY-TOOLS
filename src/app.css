@@ -1,0 +1,30 @@
+body {
+    background-color: #121212; /* Dark gray background */
+    color: #ffffff; /* White text for contrast */
+    font-family: Arial, sans-serif; /* Choose a clean font */
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: #bb86fc; /* Light purple links */
+    text-decoration: none;
+}
+
+a:hover {
+    color: #ffffff; /* Change to white on hover */
+    text-decoration: underline;
+}
+
+input, button {
+    background-color: #333333; /* Darker input fields */
+    color: #ffffff;
+    border: 1px solid #444444;
+    padding: 5px;
+}
+
+input:focus, button:focus {
+    outline: none;
+    border-color: #bb86fc; /* Highlighted border on focus */
+}
+

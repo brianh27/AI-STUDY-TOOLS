@@ -1,8 +1,8 @@
 import axios from "axios"
-import PocketBase from 'pocketbase';
-import React from 'react'
+import PocketBase from 'pocketbase';    
+
 export default async function userCheck(props){
-    return axios.get("http://localhost:8090/api/collections/user_info/records").then((response)=>{
+    return axios.get("https://ai-study-guides.pockethost.io/api/collections/user_info/records").then((response)=>{
         
         const data=response.data.items
         
@@ -26,7 +26,7 @@ export default async function userCheck(props){
 
 export async function getTests(props){
     
-    const pb = new PocketBase('http://127.0.0.1:8090');
+    const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
     return await pb.collection('Test').getFullList({
         sort: '-created',
     }).then((response)=>{
@@ -36,13 +36,13 @@ export async function getTests(props){
 }
 
 export async function insert(props){
-    const pb = new PocketBase('http://127.0.0.1:8090');
+    const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
     const record = await pb.collection('Test').create({Practice_Tests:props.data});
     
     return record.id
 }
 export async function update(props) {
-    const pb = new PocketBase('http://127.0.0.1:8090');
+    const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
     console.log(props.cards)
     // Pass the ID and the object with the fields to update separately
     const record = await pb.collection('Test').update(props.id, {

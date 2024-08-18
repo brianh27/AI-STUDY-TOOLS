@@ -61,7 +61,7 @@ const Home=()=>{
                 <div>
                     {text}: 
                     <button onClick={()=>{
-                        if (param[code] >5) {
+                        if (param[code] >1) {
                             const temp = [...param];
                             temp[code] -= 1;
                             setParam(temp);

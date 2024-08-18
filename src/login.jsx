@@ -37,6 +37,9 @@ const Login=()=>{
               <button type="submit">Login</button>
               
       </form>
+        idk why but you can't access the app from /Home. so you just have to login.
+        username: goldCheese@gmail.com
+        password: 12345
     </div>
     )
 }

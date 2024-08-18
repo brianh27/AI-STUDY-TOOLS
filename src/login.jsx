@@ -40,6 +40,18 @@ const Login=()=>{
         idk why but you can't access the app from /Home. so you just have to login.
         username: goldCheese@gmail.com
         password: 12345
+
+        React + Vite
+
+        also I made this becasue i had time over the summer and wanted to learn something new.
+        It was quite challenging but I have to thank some people who helped me along the way.
+        William Feng, Dhruv Saini, Nischant, RobloxDeveloper.
+        
+        Bug fixes (Remeber to do):
+        fix the read only edit window
+        add more modes, chats?
+        make auto detection for if the formatting is correct
+
     </div>
     )
 }

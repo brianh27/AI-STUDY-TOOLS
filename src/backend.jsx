@@ -1,6 +1,6 @@
 import axios from "axios"
 import PocketBase from 'pocketbase';
-
+import React from 'react'
 export default async function userCheck(props){
     return axios.get("http://localhost:8090/api/collections/user_info/records").then((response)=>{
         

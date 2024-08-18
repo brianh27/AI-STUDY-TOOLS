@@ -33,7 +33,7 @@ const Login=()=>{
       {message}
       <form onSubmit={check}>
               Username: <input onChange={()=>changeUser(event.target.value)} value={user} />
-              <p>Password: <input onChange={()=>changePass(event.target.value)} value={pass} /></p>
+              <p>Password: <input type='password' onChange={()=>changePass(event.target.value)} value={pass} /></p>
               <button type="submit">Login</button>
               
       </form>

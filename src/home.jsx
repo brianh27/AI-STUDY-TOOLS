@@ -38,14 +38,18 @@ const Home=()=>{
         const formData= new FormData(event.target)
         const response=formData.get('response')
         event.preventDefault()
-        const val=await ask({description:`You are a practice test maker. The user will send you a list of their notes or simply a general topic. If the response does not make sense in this context or is not academic, test, or learning related return blank. You must return the exact number of each of the questions I specify. Under no circumstances do you double space lines. Every single sentence must only have 1 space between them. On the first line write the title of the topic. On the second line write three numbers seperated by spaces in this order ${param[0]},${param[1]},${param[2]}. Then write ${param[0]} key vocabulary words on every other line, then its definition on the line below the question. Then write ${param[1]} questions with one word or phrase answers, then its correct answer on the line below the question. Then write ${param[2]} essay prompts regarding the topic. YOU MUST HAVE THE EXACT NUMBER OF EACH QUESTION as I specified. NO MORE NO LESS, UNDER NO CIRCUMSTANCES DO YOU GO STRAY FROM THE VALUE I PROVIDED. Use the symbol '\n' to separate lines. NEVER EVER USE '\n' at the start or at the end. On the last line either classify the topic as "Math", "Science", "Literature", "Social Studies" or "Other" based on the subject matter that the study guide is based most closely around.`,query:response})
+        const val=await ask({description:`You are a practice test maker. The user will send you a list of their notes or simply a general topic. If the response does not make sense in this context or is not academic, test, or learning related return blank. You must return the exact number of each of the questions I specify. Under no circumstances do you double space lines. Every single sentence must only have 1 space between them. On the first line write the title of the topic. On the second line write three numbers separated by spaces in this order ${param[0]},${param[1]},${param[2]}. Then write EXACTLY ${param[0]} key vocabulary words on every other line (no more no less), then its definition on the line below the question. Then write EXACTLY ${param[1]} questions with one word or phrase answers (NO MORE NO LESS), then its correct answer on the line below the question. Then write EXACTLY ${param[2]} essay prompts regarding the topic (no more no less). YOU MUST HAVE THE EXACT NUMBER OF EACH QUESTION as I specified. NO MORE NO LESS, UNDER NO CIRCUMSTANCES DO YOU GO STRAY FROM THE VALUES I PROVIDED. Use the symbol '\n' to separate lines. NEVER EVER USE '\n' at the start or at the end.`,query:response})
+
+
+        const subject =await ask({description:`Based on the description given either return the word "Math", "Science", "Literature", "Social Studies" or "Other" based on the subject matter that the user input is based most closely around.`,query:response})
+
         
         if (val===''){
             setNotify(2)
         }else{
             setNotify(3)
             
-            setCards(val)
+            setCards(val+'\n'+subject)
         }
         
         
@@ -266,7 +270,7 @@ const Home=()=>{
             async function resulter(props){
                 
                 props.d('Loading. Please Wait...')
-                const val=await ask({description:`You are a helpful checker bot. The user response is on the left side. The prompt is on the right side. You are also a pirate, emphasize this in your responses. Give a detailed and nuaced feedback to this essay detailing its qualities and where it can be improved especially with inaccuracies and clearness and organization and concicseness. Limit it to under 150 words.`,query:`${props.i} and ${props.ans}`})
+                const val=await ask({description:`You are a helpful checker bot. The user response is on the left side. The prompt is on the right side. Give a detailed and nuaced feedback to this essay detailing its qualities and where it can be improved especially with inaccuracies and clearness and organization and concicseness. Limit it to under 150 words.`,query:`${props.i} and ${props.ans}`})
                 props.d(val)
             }
             return(

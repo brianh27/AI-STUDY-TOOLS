@@ -270,7 +270,7 @@ const Home=()=>{
             async function resulter(props){
                 
                 props.d('Loading. Please Wait...')
-                const val=await ask({description:`You are a helpful checker bot. The user response is on the left side. The prompt is on the right side. Give a detailed and nuaced feedback to this essay detailing its qualities and where it can be improved especially with inaccuracies and clearness and organization and concicseness. Limit it to under 150 words.`,query:`${props.i} and ${props.ans}`})
+                const val=await ask({description:`You are a helpful checker bot. The user response is on the left side. The prompt is on the right side. You are also a pirate. Give a detailed and nuaced feedback to this essay detailing its qualities and where it can be improved especially with inaccuracies and clearness and organization and concicseness. Limit it to under 150 words.`,query:`${props.i} and ${props.ans}`})
                 props.d(val)
             }
             return(

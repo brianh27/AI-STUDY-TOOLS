@@ -1,6 +1,6 @@
 import axios from "axios"
 import PocketBase from 'pocketbase';    
-
+import { useState,useEffect } from 'react'
 export default async function userCheck(props){
     return axios.get("https://ai-study-guides.pockethost.io/api/collections/user_info/records").then((response)=>{
         
@@ -8,11 +8,11 @@ export default async function userCheck(props){
         
         
 
-        const account=data.find(n=>n.email===props.username)
+        const account=data.find(n=>n.username===props.username)
         
         if (account){
             if (account.password==props.password){
-                return true
+                return [true,account.id]
             }else{
                 return 'Password Incorrect'
             }
@@ -27,7 +27,7 @@ export default async function userCheck(props){
 export async function getTests(props){
     
     const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
-    return await pb.collection('Test').getFullList({
+    return await pb.collection(props.col).getFullList({
         sort: '-created',
     }).then((response)=>{
         
@@ -36,26 +36,56 @@ export async function getTests(props){
 }
 
 export async function insert(props){
-    const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
-    const record = await pb.collection('Test').create({Practice_Tests:props.data});
     
-    return record.id
+    const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
+    return pb.collection(props.col).create(props.data).then(record=>{
+        return record.id
+    })
+    
+    
 }
+
 export async function update(props) {
     const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
-    console.log(props.cards)
-    // Pass the ID and the object with the fields to update separately
-    const record = await pb.collection('Test').update(props.id, {
-        Practice_Tests: props.cards
+    console.log(props)
+    
+    const rec=await pb.collection(props.col).getOne(props.id).catch(error => {
+
+        console.error('Failed to update record:', error.message);
+        insert({data:{Practice_Tests:props.cards,username:props.edi,editors:''},col:'Test'})
+        return 
+    
+    });
+    
+    await pb.collection('Test').update(props.id, {
+        Practice_Tests: props.cards,
+        editors: rec.editors+props.edi
     })
     .then(record => {
         console.log('Record updated:', record);
     })
     .catch(error => {
+
         console.error('Failed to update record:', error.message);
-        insert({data:props.cards})
-      
+        insert({data:{Practice_Tests:props.cards,username:props.edi,editors:''},col:'Test'})
+    
     });
+
+    
+}
+export async function getData(props) {
+    const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
+    console.log(props)
+    
+
+    
+    return pb.collection(props.col).getOne(props.id)
+    .then(record => {
+
+        console.log('Record retrieved:', record);
+        return record
+    })
+    
     
 }
 

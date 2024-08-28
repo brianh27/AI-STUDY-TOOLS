@@ -20,9 +20,7 @@ const Home=()=>{
         
         const temp=searchParams.get('confidential')
         if (temp===null){
-            return(
-                <NotFound></NotFound>
-            )
+            navigate('/not-found')
         }
     
         setID(temp)
@@ -35,10 +33,10 @@ const Home=()=>{
         <div>
             <h1>Hi {user===null?'':user}!</h1>
             <button onClick={()=>navigate(`/guides?confidential=${userID}`)}>Study Guide Generator</button>
-            <button>Daily Puzzle</button>
-            <button>Notes Sharing</button>
-            <button>Essay Review</button>
-            <button>Referral</button>
+            <button onClick={()=>navigate(`/puzzle?confidential=${userID}`)}>Daily Puzzle</button>
+            <button>Notes Sharing (not ready)</button>
+            <button>Essay Review (not ready)</button>
+            <button>Referral (not ready, but please refer)</button>
 
 
         </div>

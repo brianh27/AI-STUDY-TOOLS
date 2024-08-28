@@ -395,9 +395,7 @@ const Guides=()=>{
         const iden = searchParams.get('confidential');
         if (iden===null){
             console.log('notFound')
-            return(
-                <NotFound></NotFound>
-            )
+            navigate('/not-found')
         }
         setUser(1)
         setUserID(iden)

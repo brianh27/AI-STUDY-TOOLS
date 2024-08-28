@@ -127,7 +127,6 @@ const Login=()=>{
       <button onClick={()=>setState(true)}>Sign In</button>
       <button onClick={()=>setState(false)}>Sign Up</button>
       {state?<Created></Created>:<Create></Create>}
-      edited
     </div>
   )
 }

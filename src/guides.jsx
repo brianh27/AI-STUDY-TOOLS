@@ -7,6 +7,118 @@ import userCheck,{insert,getData,getTests,update} from './backend.jsx'
 import { set } from 'mongoose';
 import { useSearchParams,useNavigate } from 'react-router-dom';
 import NotFound from './notFound.jsx'
+async function getResult({i,ans,storedAns,setMem,num}){
+               
+                
+                
+    const gx = [...storedAns];
+    gx[num] = [...gx[num]];
+
+    // Update the specific value
+    gx[num][1] = "Loading, please wait...";
+    setMem(gx); // Set the updated state
+
+    
+    const val=await ask({description:`You are a helpful checker bot. You are provided two phrases, the left phrase is the users answer, and the right phrase is the correct solution. Return "Please Type an Anwser" if the anwser is blank. Return if the user answer is either "Excellent" (if there are just a few mistakes), "Incorrect"(if the general definition of the user anwser compelty does not match the solution), "Good" (It matches the answer but there are spelling erros) or "Close enough" (which means the input is a synynom or has a definition similar to that of the solution)`,query:`User anwser: ${i} and the correct anwser: ${ans}`})
+    const t = [...gx];
+    t[num] = [...t[num]];
+    t[num][1] = (
+        <div>
+            <p>{val}</p>
+            <p>your answer: {i}</p>
+            <p>correct answer: {ans}</p>
+        </div>
+    );
+    setMem(t);
+    
+}
+const Write=({setFormat, format, edits, setEdits, setaccept, accept, update, user, idNum})=>{
+    
+
+    const toAccept=['Please make sure you have a title','Please make sure you have a topic','Please make sure your vocab each have definitions below them','Please make sure your quiz questions each have anwsers below them',"Please make sure you have an essay prompt"]
+    function updateServer({i}){
+            
+        
+        setFormat(format({t:i[4],v:i[0],q:i[1],e:i[2],s:i[3]}))
+        
+    }
+    function processChange({ e, i }) {
+        setEdits((edits) => {
+            const newEdits = [...edits];
+            newEdits[i] = e.target.value;
+            return newEdits;
+        });
+    }
+    function check(){
+        if (edits[4].trim().length===0){
+            setaccept(0)
+        }else if (edits[3].trim().length===0){
+            setaccept(1)
+        }else if (edits[0].split('\n').length%2===1||edits[0].split('\n').find(n=>n.trim().length===0)!=undefined){
+            setaccept(2)
+        }else if (edits[1].split('\n').length%2===1 ||edits[1].split('\n').find(n=>n.trim().length===0)!=undefined){
+            setaccept(3)
+        }else if (edits[2].split('\n').length===0||edits[2].split('\n').find(n=>n.trim().length===0)!=undefined){
+            setaccept(4)
+        }else
+        {
+            setaccept(5)
+        }
+    }
+    check()
+    return(
+        <div>
+            <form onSubmit={(event) => {
+                    event.preventDefault();
+                    updateServer({ i: edits});
+                }}>
+                    <p><input placeholder="Enter your title" value={edits[4]} onChange={(e)=>processChange({e:e,i:4})}></input></p>
+                    <p><input placeholder="Enter your topic" value={edits[3]} onChange={(e)=>processChange({e:e,i:3})}></input></p>
+                    <textarea
+                        id="vocab"
+                        name="vocab"
+                        rows="10"
+                        cols="50"
+                        placeholder="Enter your vocab with its definition on the line below"
+                        defaultValue={edits[0]}
+                        
+                        onChange={(e)=>processChange({e:e,i:0})}
+                        
+                    ></textarea>
+                    <textarea
+                        id="quiz"
+                        name="quiz"
+                        rows="10"
+                        cols="50"
+                        placeholder="Enter your quiz question with its anwser on the line below"
+                        defaultValue={edits[1]}
+                        //value={edits[1]} // Controlled input
+                        onChange={(e)=>processChange({e:e,i:1})}
+                    ></textarea>
+                    <textarea
+                        id="essay"
+                        name="essay"
+                        rows="10"
+                        cols="50"
+                        placeholder="Enter your essay prompts"
+                        defaultValue={edits[2]}
+                        //value={edits[2]} // Controlled input
+                        onChange={(e)=>processChange({e:e,i:2})}
+                    ></textarea>
+
+                    
+                    {accept===5?
+                    <div>
+                        <p><button type="submit">Update Your Current Study Guide</button></p>
+                        <p><button type='button' onClick={()=>update({edi:user,id:idNum,col:'Test',cards:format({t:edits[4],v:edits[0],q:edits[1],e:edits[2],s:edits[3]})})}>Propogate and save the changes to the server</button></p>
+                    </div>
+                    :<p>{toAccept[accept]}</p>}
+            </form>
+            
+        </div>
+        
+    )
+}
 const Guides=()=>{
     const [searchParams] = useSearchParams();
     const [userID,setUserID]=useState(null)
@@ -23,7 +135,16 @@ const Guides=()=>{
     const [accept,setaccept]=useState(3)
     const [test,setTest]=useState(null)
     const [edits,setEdits]=useState(['','','','',''])
-
+    function setA({t}){
+        if (t!=null){
+            const ans=[];
+            for (let a=0;a<t.length;a+=1){
+                ans.push(['',null])
+            };
+            setMem(ans)
+        }
+    }
+    
     if (LoggedIn===undefined){
         return (
             <div>
@@ -40,7 +161,7 @@ const Guides=()=>{
         setNum(0)
         const info=[]
         const vocab=v.split('\n')
-        console.log(vocab)
+        
         for (let i=0;i<vocab.length/2;i+=1){
             info.push([0,vocab[i*2],vocab[i*2+1]])
         }
@@ -76,19 +197,21 @@ const Guides=()=>{
             const e=await ask({description:`You are a practice test maker. Follow my directions EXACTLY, you must be EXACT. The user will send you a list of their notes or simply a general topic. The only thing you will return is EXACTLY ${param[2]} essay prompts relating to the subject the user inputted. Seperate the essay prompts with one blank line. This is the order: Question, blank line, Question ... and so on`,query:response})
             
             const subject =await ask({description:`Based on the description given either return the word "Math", "Science", "Literature", "Social Studies" or "Other" based on the subject matter that the user input is based most closely around.`,query:response})
-            console.log(v)
+            
             let vocabs=v.split('\n').filter(n=>n.trim()!='').join('\n')
             
             
             let quizs=q.split('\n').filter(n=>n.trim()!='').join('\n')
            
-            console.log(e)
+            
             let essay=e.split('\n').filter(n=>n.trim()!='').join('\n')
             
 
             setEdits([vocabs,quizs,essay,subject,title])
-            console.log(edits)
-            setFormat(format({t:title,v:vocabs,q:quizs,e:essay,s:subject}))
+            
+            const tempo=format({t:title,v:vocabs,q:quizs,e:essay,s:subject})
+            setFormat(tempo)
+            setA({t:tempo})
             setID(Math.random())
 
             setNotify(3)
@@ -184,7 +307,7 @@ const Guides=()=>{
                         onChange={(e) => setInputValue(e.target.value)}
                     />
                     {test.filter(t=>t.Practice_Tests[t.Practice_Tests.length-2].toLowerCase().includes(inputValue.toLowerCase())&& t.Practice_Tests[t.Practice_Tests.length-1].includes(topics[topic])).map((n,i)=><li key={i}>
-                    <button onClick={()=>{setFormat(n.Practice_Tests);setID(n.id);
+                    <button onClick={()=>{setFormat(n.Practice_Tests);setA({t:n.Practice_Tests});setID(n.id);
                     
                         setEdits([n.Practice_Tests.map((t,i)=>t[0]===0?'\n'+t[1]+'\n'+t[2]:'').join('').slice(1,10000),n.Practice_Tests.map(t=>t[0]===1?'\n'+t[1]+'\n'+t[2]:'').join('').slice(1,10000),n.Practice_Tests.map(t=>t[0]===2?'\n'+t[1]:'').join('').slice(1,10000),n.Practice_Tests[n.Practice_Tests.length-1],n.Practice_Tests[n.Practice_Tests.length-2]])}}>
                         {n.Practice_Tests[n.Practice_Tests.length-2].slice(0,100)}...</button> Created by: {n.username} {n.editors!=''&&'Edited by:'+n.editors} </li>) }
@@ -194,95 +317,9 @@ const Guides=()=>{
         }
         
     }
-    //useEffect(console.log(formatted),[formatted])
     
-    const Write=()=>{
     
-
-        const toAccept=['Please make sure you have a title','Please make sure you have a topic','Please make sure your vocab each have definitions below them','Please make sure your quiz questions each have anwsers below them',"Please make sure you have an essay prompt"]
-        function updateServer({i}){
-                
-            
-            setFormat(format({t:i[4],v:i[0],q:i[1],e:i[2],s:i[3]}))
-            
-        }
-        function processChange({ e, i }) {
-            setEdits((edits) => {
-                const newEdits = [...edits];
-                newEdits[i] = e.target.value;
-                return newEdits;
-            });
-        }
-        function check(){
-            if (edits[4].trim().length===0){
-                setaccept(0)
-            }else if (edits[3].trim().length===0){
-                setaccept(1)
-            }else if (edits[0].split('\n').length%2===1||edits[0].split('\n').find(n=>n.trim().length===0)!=undefined){
-                setaccept(2)
-            }else if (edits[1].split('\n').length%2===1 ||edits[1].split('\n').find(n=>n.trim().length===0)!=undefined){
-                setaccept(3)
-            }else if (edits[2].split('\n').length===0||edits[2].split('\n').find(n=>n.trim().length===0)!=undefined){
-                setaccept(4)
-            }else
-            {
-                setaccept(5)
-            }
-        }
-        check()
-        return(
-            <div>
-                <form onSubmit={(event) => {
-                        event.preventDefault();
-                        updateServer({ i: edits});
-                    }}>
-                        <p><input placeholder="Enter your title" value={edits[4]} onChange={(e)=>processChange({e:e,i:4})}></input></p>
-                        <p><input placeholder="Enter your topic" value={edits[3]} onChange={(e)=>processChange({e:e,i:3})}></input></p>
-                        <textarea
-                            id="vocab"
-                            name="vocab"
-                            rows="10"
-                            cols="50"
-                            placeholder="Enter your vocab with its definition on the line below"
-                            defaultValue={edits[0]}
-                            
-                            onChange={(e)=>processChange({e:e,i:0})}
-                            
-                        ></textarea>
-                        <textarea
-                            id="quiz"
-                            name="quiz"
-                            rows="10"
-                            cols="50"
-                            placeholder="Enter your quiz question with its anwser on the line below"
-                            defaultValue={edits[1]}
-                            //value={edits[1]} // Controlled input
-                            onChange={(e)=>processChange({e:e,i:1})}
-                        ></textarea>
-                        <textarea
-                            id="essay"
-                            name="essay"
-                            rows="10"
-                            cols="50"
-                            placeholder="Enter your essay prompts"
-                            defaultValue={edits[2]}
-                            //value={edits[2]} // Controlled input
-                            onChange={(e)=>processChange({e:e,i:2})}
-                        ></textarea>
-
-                        
-                        {accept===5?
-                        <div>
-                            <p><button type="submit">Update Your Current Study Guide</button></p>
-                            <p><button type='button' onClick={()=>update({edi:user,id:idNum,col:'Test',cards:format({t:edits[4],v:edits[0],q:edits[1],e:edits[2],s:edits[3]})})}>Propogate and save the changes to the server</button></p>
-                        </div>
-                        :<p>{toAccept[accept]}</p>}
-                </form>
-                
-            </div>
-            
-        )
-    }
+    
     const Display=(props)=>{
         const Vocab=({card})=>{
             return(
@@ -292,19 +329,15 @@ const Guides=()=>{
             )
         }
         const Quiz=({card})=>{
-            async function getResult(props){
-                setRes("Loading, please wait...")
-                const val=await ask({description:`You are a helpful checker bot. You are provided two phrases, the left phrase is the users answer, and the right phrase is the correct solution. Return "Please Type an Anwser" if the anwser is blank. Return if the user answer is either "Excellent" (if there are just a few mistakes), "Incorrect"(if the general definition of the user anwser compelty does not match the solution), "Good" (It matches the answer but there are spelling erros) or "Close enough" (which means the input is a synynom or has a definition similar to that of the solution)`,query:`${props.i} and ${props.ans}`})
-                setRes(<div><p>{val}</p> <p>your awnser: {props.i}</p><p>correct anwser: {props.ans}</p></div>)
-                
-            }
+           
             const handleSubmit=(event)=>{
                 event.preventDefault();
                 const data=new FormData(event.target);
                 const i = data.get('inputField')
-                getResult({i:i,ans:card[2]})
+                getResult({i,ans:card[2],storedAns:storedAns,setMem:setMem,num:num})
                 
             }
+            useEffect(()=>{const temp=0},[storedAns])
             return(
                 <div>
                     {card[1]}
@@ -312,25 +345,31 @@ const Guides=()=>{
                         <input type="text" placeholder="Type your Answer Here" name='inputField'/>
                         <button type="submit">Submit</button>
                     </form>
-                    {ansResult}
+                    {storedAns[num][1]}
                 </div>
             )
         }
         const Essay=({card})=>{
-            const [response, setResponse] = useState(""); 
-            const [ansResult, setRes] = useState("");
+            const [response,setResponse]=useState(null)
+            
             async function resulter(props){
                 
-                props.d('Loading. Please Wait...')
+                
+                const temp=storedAns
+                temp[num][1]='Loading. Please Wait...'
+                setMem(temp)
                 const val=await ask({description:`You are a helpful checker bot. The user response is on the left side. The prompt is on the right side. Give a detailed and nuaced feedback to this essay detailing its qualities and where it can be improved especially with inaccuracies and clearness and organization and concicseness. Limit it to under 150 words.`,query:`${props.i} and ${props.ans}`})
                 props.d(val)
+                const temps=storedAns
+                temps[num][1]=val
+                setMem(temps)
             }
             return(
                 <div>
                     {card[1]}
                     <form onSubmit={(event) => {
                         event.preventDefault();
-                        resulter({ i: response, ans: card[1], d: setRes });
+                        resulter({ i: response===null?storedAns[num][0]:response, ans: card[1]});
                     }}>
                         <textarea
                             id="response"
@@ -338,13 +377,13 @@ const Guides=()=>{
                             rows="10"
                             cols="50"
                             placeholder="Enter your answer here..."
-                            value={response} // Controlled input
-                            onChange={(e) => setResponse(e.target.value)} 
+                            value={response===null?storedAns[num][0]:response} // Controlled input
+                            onChange={(e) => {setResponse(e.target.value);const temp=storedAns; temp[num][0]=e.target.value;setMem(temp)}} 
                         ></textarea>
 
                         <p><button type="submit">Submit</button></p>
                     </form>
-                    {ansResult}
+                    {storedAns[num][1]}
                 </div>
             
             )
@@ -363,17 +402,23 @@ const Guides=()=>{
         return (
             <div>
                 <h1>{formatted[formatted.length-2]}</h1>
-                {<div><button onClick={()=>{setNum((num-1+(formatted.length-2)*10)%(formatted.length-2)); setFlip(0);setRes(null)}}>Previous</button><button onClick={()=>{setNum((num+1+(formatted.length-2)*10)%(formatted.length-2)); setFlip(0);setRes(null)}}>Next</button></div>}
+                {<div><button onClick={()=>{setNum((num-1+(formatted.length-2)*10)%(formatted.length-2)); setFlip(0);}}>Previous</button><button onClick={()=>{setNum((num+1+(formatted.length-2)*10)%(formatted.length-2)); setFlip(0);}}>Next</button></div>}
                 {num+1} out of {formatted.length-2}
                 {formatted[num][0]===0?<Vocab card={formatted[num]}></Vocab>:(formatted[num][0]===1?<Quiz card={formatted[num]}></Quiz>:<Essay card={formatted[num]}></Essay>)}
             </div>
         )
     }
-    
+    const Starred=()=>{
+        return(
+            <div>
+
+            </div>
+        )
+    }
     const navigate = useNavigate();
     const [flip,setFlip]=useState(0)
-    const [ansResult,setRes]=useState(null)
-    const pages=[<Generate></Generate>,<Search setCards={setCards}></Search>,<Write></Write>,<p></p>]
+    
+    const [storedAns,setMem]=useState([])
     useEffect(() => {
         const fetchData = async () => {
             const data = await getTests({col:"Test"}); 
@@ -387,6 +432,10 @@ const Guides=()=>{
 
     async function getUser({i}){
         const u=await getData({id:i,col:'user_info'})
+        if (u===false){
+            navigate('/not-found')
+            return
+        }
         navigate('/guides', { replace: true });
         setUser(u.username)
     }
@@ -394,15 +443,22 @@ const Guides=()=>{
         
         const iden = searchParams.get('confidential');
         if (iden===null){
-            console.log('notFound')
+            
             navigate('/not-found')
+            return
         }
         setUser(1)
         setUserID(iden)
-        console.log(iden)
+        
         getUser({i:iden})
         
     }
+    const pages=[<Generate></Generate>,<Search setCards={setCards}></Search>,<Write  setFormat={setFormat}     format={format} edits={edits} setEdits={setEdits} setaccept={setaccept} accept={accept} update={update} user={user} 
+        idNum={idNum}
+    ></Write>,<Starred></Starred>,<p></p>]
+
+
+    
     return(
         <div>
             <h1>AI Study Guide</h1>
@@ -410,6 +466,7 @@ const Guides=()=>{
             <button onClick={()=>setMode(1)}>Search</button>
             <button onClick={()=>{setMode(2)}}>Edit</button>
             <button onClick={()=>setMode(3)}>Fullscreen</button>
+            <button onClick={()=>setMode(4)}>Starred</button>
             <button onClick={()=>navigate(`/home?confidential=${userID}`)}>Go to Home</button>
             {pages[mode]}
             
@@ -418,4 +475,5 @@ const Guides=()=>{
         </div>
     )
 }
+
 export default Guides

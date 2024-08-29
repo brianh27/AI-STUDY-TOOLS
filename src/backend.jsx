@@ -73,6 +73,13 @@ export async function update(props) {
 
     
 }
+export async function updateUser({col,id,info}){
+    const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
+    await pb.collection(col).update(id, info)
+    .then(record => {
+        console.log('Record updated:', record);
+    })
+}
 export async function getData(props) {
     const pb = new PocketBase('https://ai-study-guides.pockethost.io/');
     console.log(props)
@@ -84,6 +91,8 @@ export async function getData(props) {
 
         console.log('Record retrieved:', record);
         return record
+    }).catch(error=>{
+        return false
     })
     
     

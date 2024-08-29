@@ -131,7 +131,7 @@ const Login=()=>{
   return(
     <div>
       <button onClick={()=>setState(true)}>Sign In</button>
-      <button onClick={()=>{setState(false);setReset(true)}}>Sign Up</button>
+      <button onClick={()=>{setState(false);setReset(true);upUse('');upPass('')}}>Sign Up</button>
       {state?<Created></Created>:<Create usernam={usernam} setState={setState} newUser={newUser} newPass={newPass} error={error} upUse={upUse} upPass={upPass} setError={setError} ></Create>}
     </div>
   )

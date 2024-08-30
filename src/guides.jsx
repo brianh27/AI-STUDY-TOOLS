@@ -466,7 +466,7 @@ const Guides=()=>{
             <button onClick={()=>setMode(1)}>Search</button>
             <button onClick={()=>{setMode(2)}}>Edit</button>
             <button onClick={()=>setMode(3)}>Fullscreen</button>
-            <button onClick={()=>setMode(4)}>Starred</button>
+            <button onClick={()=>setMode(4)}>Starred (in progress)</button>
             <button onClick={()=>navigate(`/home?confidential=${userID}`)}>Go to Home</button>
             {pages[mode]}
             

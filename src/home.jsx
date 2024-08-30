@@ -38,9 +38,10 @@ const Home=()=>{
             <h1>Hi {user===null?'':user}!</h1>
             <button onClick={()=>navigate(`/guides?confidential=${userID}`)}>Study Guide Generator</button>
             <button onClick={()=>navigate(`/puzzle?confidential=${userID}`)}>Daily Puzzle</button>
+            <button onClick={()=>navigate(`/pixel?confidential=${userID}`)}>Pixel Painters</button>
             <button>Notes Sharing (not ready)</button>
             <button>Essay Review (not ready)</button>
-            <button>Profile (not ready, but please refer)</button>
+            <button onClick={()=>navigate(`/profile?confidential=${userID}`)}>Profile</button>
             <p>
                 <h1>Points System</h1>
                 <li>100 - Referring a Person </li>

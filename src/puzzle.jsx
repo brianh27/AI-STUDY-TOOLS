@@ -5,7 +5,7 @@ import { useSearchParams,useNavigate, Link} from 'react-router-dom';
 import NotFound from './notFound.jsx'
 
 
-const Display=({userData,d})=>{
+const Display=({userData,d,yesterday})=>{
     const [data,setData]=useState(null)
    
     const [choice,setChoice]=useState(d in userData.info.answers?userData.info.answers[d]:null)
@@ -23,6 +23,7 @@ const Display=({userData,d})=>{
             t.acceptance[1]=t.acceptance[1]+1
         }else{
             temp.info.points=temp.info.points+25
+            temp.info.streak=0
             t.acceptance[1]=t.acceptance[1]+1
         }
         await updateUser({col:'user_info',id:userData.id,info:temp})
@@ -38,7 +39,7 @@ const Display=({userData,d})=>{
             <div>
                     
                     <p>{data.Subject}</p>
-                    <p>Acceptance Rate: {data.acceptance[1]===0?0:data.acceptance[0]/data.acceptance[1]*100}%</p>
+                    <p>Acceptance Rate: {data.acceptance[1]===0?0:String(data.acceptance[0]/data.acceptance[1]*100).slice(0,4)}%</p>
                     <p>{<div dangerouslySetInnerHTML={{ __html: data.q}} />}</p>
                     <p>{data.choices.map((n,i)=><button onClick={() => {
                         if (choice === null) {
@@ -49,6 +50,7 @@ const Display=({userData,d})=>{
                     key={i}>{n}</button>)}</p>
                     
                     {choice!=null?<div><p>Your Answer: {data.choices[choice]}</p><p>{<div dangerouslySetInnerHTML={{ __html: data.a}} />}</p></div>:''}
+                    <button >Streak: {userData.info.streak}</button>
             </div>
         )
     } 
@@ -80,14 +82,22 @@ const Puzzle=()=>{
     const [userData,setUser]=useState(null)
     const date = new Date()
     const d=date.getUTCFullYear()+'-'+date.getUTCMonth()+'-'+date.getUTCDate()
+    
+    date.setDate(date.getDate() - 1); // Subtract one day
 
+    const yesterday =date.getUTCFullYear()+'-'+date.getUTCMonth()+'-'+date.getUTCDate()
+
+    
     async function getAns({userID}){
         const temp=await getData({col:'user_info',id:userID})
         if (temp===false){
             navigate('/not-found')
             return
         }
-        console.log(temp)
+        if (!(yesterday in temp.info.answers) && temp.info.streak>1) {
+            temp.info.streak=0
+            await updateUser({col:'user_info',id:temp.id,info:temp})
+        }
         
         setUser(temp)
 
@@ -115,7 +125,9 @@ const Puzzle=()=>{
     return(
         <div>
             <h1>Daily Puzzle</h1>
-            {userData===null?'loading...':<Display d={d} userData={userData}></Display>}
+            <button onClick={()=>navigate(`/home?confidential=${userData.id}`)}>Go to Home</button>
+            {userData===null?'loading...':<Display d={d} yesterday={yesterday} userData={userData}></Display>}
+            
         </div>
     )
 }

@@ -5,6 +5,8 @@ import Guides from './guides.jsx';
 import Home from './home.jsx'
 import Puzzle from './puzzle.jsx'
 import NotFound from "./notFound.jsx"
+import Profile from "./profile.jsx"
+import Pixel from "./pixel.jsx"
 function App() {
   return (
     <Router>
@@ -15,6 +17,8 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/guides" element={<Guides />} />
           <Route path="/puzzle" element={<Puzzle />} />
+          <Route path="/profile" element={<Profile/>} />
+          <Route path="/pixel" element={<Pixel/>} />
           <Route path="/not-found" element={<NotFound/>} />
         </Routes>
       </div>

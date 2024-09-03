@@ -1,9 +1,9 @@
 import React from 'react'
 import { useState,useEffect } from 'react'
-import Login,{LoggedIn} from './login.jsx'
+import Login from './login.jsx'
 import { Link } from 'react-router-dom';
 import ask from "./aiget.jsx"
-import userCheck,{insert,getData,getTests,update} from './backend.jsx'
+import userCheck,{insert,getState,getData,getTests,update} from './backend.jsx'
 import { set } from 'mongoose';
 import { useSearchParams,useNavigate } from 'react-router-dom';
 import NotFound from './notFound.jsx'
@@ -32,10 +32,10 @@ async function getResult({i,ans,storedAns,setMem,num}){
     setMem(t);
     
 }
-const Write=({setFormat, format, edits, setEdits, setaccept, accept, update, user, idNum})=>{
+const Write=({setFormat, format, edits, setEdits, setaccept, accept, update, user, idNum,setID})=>{
     
-
-    const toAccept=['Please make sure you have a title','Please make sure you have a topic','Please make sure your vocab each have definitions below them','Please make sure your quiz questions each have anwsers below them',"Please make sure you have an essay prompt"]
+    const topics=['Math',"Science",'Social Studies',"Literature",'Other']
+    const toAccept=['Please make sure you have a title','Please make sure you have the topic Math, Science, Social Studies, Literature, or Other','Please make sure your vocab each have definitions below them','Please make sure your quiz questions each have anwsers below them',"Please make sure you have an essay prompt"]
     function updateServer({i}){
             
         
@@ -52,7 +52,7 @@ const Write=({setFormat, format, edits, setEdits, setaccept, accept, update, use
     function check(){
         if (edits[4].trim().length===0){
             setaccept(0)
-        }else if (edits[3].trim().length===0){
+        }else if (topics.find(n=>n===edits[3])===undefined){
             setaccept(1)
         }else if (edits[0].split('\n').length%2===1||edits[0].split('\n').find(n=>n.trim().length===0)!=undefined){
             setaccept(2)
@@ -63,6 +63,13 @@ const Write=({setFormat, format, edits, setEdits, setaccept, accept, update, use
         }else
         {
             setaccept(5)
+        }
+    }
+    async function handle(){
+        const temp=await update({edi:user,id:idNum,col:'Test',cards:format({t:edits[4],v:edits[0],q:edits[1],e:edits[2],s:edits[3]})})
+        console.log(temp)
+        if (temp!=true){
+        setID(temp)
         }
     }
     check()
@@ -110,7 +117,7 @@ const Write=({setFormat, format, edits, setEdits, setaccept, accept, update, use
                     {accept===5?
                     <div>
                         <p><button type="submit">Update Your Current Study Guide</button></p>
-                        <p><button type='button' onClick={()=>update({edi:user,id:idNum,col:'Test',cards:format({t:edits[4],v:edits[0],q:edits[1],e:edits[2],s:edits[3]})})}>Propogate and save the changes to the server</button></p>
+                        <p><button type='button' onClick={handle}>Propogate and save the changes to the server</button></p>
                     </div>
                     :<p>{toAccept[accept]}</p>}
             </form>
@@ -121,7 +128,7 @@ const Write=({setFormat, format, edits, setEdits, setaccept, accept, update, use
 }
 const Guides=()=>{
     const [searchParams] = useSearchParams();
-    const [userID,setUserID]=useState(null)
+    
     const [cards,setCards]=useState(null)
     const [notify,setNotify]=useState(0)
     const [param,setParam]=useState([10,8,2])
@@ -135,6 +142,37 @@ const Guides=()=>{
     const [accept,setaccept]=useState(3)
     const [test,setTest]=useState(null)
     const [edits,setEdits]=useState(['','','','',''])
+
+    const navigate = useNavigate();
+    const [flip,setFlip]=useState(0)
+    
+    const [storedAns,setMem]=useState([])
+    useEffect(() => {
+        const fetchData = async () => {
+            const data = await getTests({col:"Test"}); 
+            
+            setTest(data);
+        };
+
+        fetchData();
+    }, [mode]);
+    const [user,setUser]=useState(null)
+
+    if (user===null){
+        const temp=getState()     
+        if (temp===false){
+            navigate('/not-found')
+        }else{
+            setUser(temp.username)
+            console.log(temp.email)
+            
+            
+            
+        }
+
+    }
+    
+
     function setA({t}){
         if (t!=null){
             const ans=[];
@@ -145,17 +183,7 @@ const Guides=()=>{
         }
     }
     
-    if (LoggedIn===undefined){
-        return (
-            <div>
-                <p>You are not logged in. pls log in</p>
-                <ul>
-                    <li><Link to="/">Go to Login</Link></li>
-                    
-                </ul>
-            </div>
-        )
-    }
+  
     function format({t,v,q,e,s}){
         
         setNum(0)
@@ -250,7 +278,8 @@ const Guides=()=>{
             )
         }
         async function addToServer(){
-            const id=await insert({data:{Practice_Tests:formatted,username:user,editors:''},col:"Test"})
+            console.log(user)
+            const id=await insert({data:{Practice_Tests:formatted,username:user,editors:null},col:"Test"})
             setID(id)
  
         }
@@ -310,7 +339,7 @@ const Guides=()=>{
                     <button onClick={()=>{setFormat(n.Practice_Tests);setA({t:n.Practice_Tests});setID(n.id);
                     
                         setEdits([n.Practice_Tests.map((t,i)=>t[0]===0?'\n'+t[1]+'\n'+t[2]:'').join('').slice(1,10000),n.Practice_Tests.map(t=>t[0]===1?'\n'+t[1]+'\n'+t[2]:'').join('').slice(1,10000),n.Practice_Tests.map(t=>t[0]===2?'\n'+t[1]:'').join('').slice(1,10000),n.Practice_Tests[n.Practice_Tests.length-1],n.Practice_Tests[n.Practice_Tests.length-2]])}}>
-                        {n.Practice_Tests[n.Practice_Tests.length-2].slice(0,100)}...</button> Created by: {n.username} {n.editors!=''&&'Edited by:'+n.editors} </li>) }
+                        {n.Practice_Tests[n.Practice_Tests.length-2].slice(0,100)}...</button> Created by: {n.username} {n.editors!=null&&'Edited by:.'+[... new Set(n.editors)]} </li>) }
                     <p></p>
                 </div>
             )
@@ -411,49 +440,12 @@ const Guides=()=>{
     const Starred=()=>{
         return(
             <div>
-
+                In the works...
             </div>
         )
     }
-    const navigate = useNavigate();
-    const [flip,setFlip]=useState(0)
-    
-    const [storedAns,setMem]=useState([])
-    useEffect(() => {
-        const fetchData = async () => {
-            const data = await getTests({col:"Test"}); 
-            
-            setTest(data);
-        };
-
-        fetchData();
-    }, [mode]);
-    const [user,setUser]=useState(null)
-
-    async function getUser({i}){
-        const u=await getData({id:i,col:'user_info'})
-        if (u===false){
-            navigate('/not-found')
-            return
-        }
-        navigate('/guides', { replace: true });
-        setUser(u.username)
-    }
-    if (user===null){
-        
-        const iden = searchParams.get('confidential');
-        if (iden===null){
-            
-            navigate('/not-found')
-            return
-        }
-        setUser(1)
-        setUserID(iden)
-        
-        getUser({i:iden})
-        
-    }
-    const pages=[<Generate></Generate>,<Search setCards={setCards}></Search>,<Write  setFormat={setFormat}     format={format} edits={edits} setEdits={setEdits} setaccept={setaccept} accept={accept} update={update} user={user} 
+   
+    const pages=[<Generate></Generate>,<Search setCards={setCards}></Search>,<Write  setID={setID} setFormat={setFormat}     format={format} edits={edits} setEdits={setEdits} setaccept={setaccept} accept={accept} update={update} user={user} 
         idNum={idNum}
     ></Write>,<Starred></Starred>,<p></p>]
 
@@ -467,7 +459,7 @@ const Guides=()=>{
             <button onClick={()=>{setMode(2)}}>Edit</button>
             <button onClick={()=>setMode(3)}>Fullscreen</button>
             <button onClick={()=>setMode(4)}>Starred (in progress)</button>
-            <button onClick={()=>navigate(`/home?confidential=${userID}`)}>Go to Home</button>
+            <button onClick={()=>navigate(`/home`)}>Go to Home</button>
             {pages[mode]}
             
             {Display({num:num,text:formatted,flip:flip})}

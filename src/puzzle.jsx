@@ -1,6 +1,6 @@
 import React from 'react'
 import { useState,useEffect } from 'react'
-import userCheck,{insert,getData,getTests,update,updateUser} from './backend.jsx'
+import userCheck,{insert,getState,getData,getTests,update,updateUser} from './backend.jsx'
 import { useSearchParams,useNavigate, Link} from 'react-router-dom';
 import NotFound from './notFound.jsx'
 
@@ -26,7 +26,7 @@ const Display=({userData,d,yesterday})=>{
             temp.info.streak=0
             t.acceptance[1]=t.acceptance[1]+1
         }
-        await updateUser({col:'user_info',id:userData.id,info:temp})
+        await updateUser({col:'users',id:userData.id,info:temp})
         await updateUser({col:'puzzles',id:data.id,info:t})
         
         
@@ -89,43 +89,34 @@ const Puzzle=()=>{
 
     
     async function getAns({userID}){
-        const temp=await getData({col:'user_info',id:userID})
+        const temp=await getData({col:'users',id:userID})
         if (temp===false){
             navigate('/not-found')
             return
         }
         if (!(yesterday in temp.info.answers) && temp.info.streak>1) {
             temp.info.streak=0
-            await updateUser({col:'user_info',id:temp.id,info:temp})
+            await updateUser({col:'users',id:temp.id,info:temp})
         }
         
         setUser(temp)
 
     }
-    function Links(){
-        const temp = searchParams.get('confidential');
-        if (userData === null) {
-            if (temp === null) {
-                
-                navigate('/not-found')
-            }else{
-                getAns({userID:temp})
-            }
-        } else if (temp !== null) {
-            reset();
+    if (userData===null){
+        const temp=getState()     
+        if (temp===false){
+            navigate('/not-found')
+        }else{
+            setUser(temp)
+            getAns({userID:temp.id})
+
+            
         }
     }
-    useEffect(()=>Links(), [userData, searchParams]);
-    function reset(){
-        
-        navigate('/puzzle', { replace: true });
-        
-    }
-    
     return(
         <div>
             <h1>Daily Puzzle</h1>
-            <button onClick={()=>navigate(`/home?confidential=${userData.id}`)}>Go to Home</button>
+            <button onClick={()=>navigate(`/home`)}>Go to Home</button>
             {userData===null?'loading...':<Display d={d} yesterday={yesterday} userData={userData}></Display>}
             
         </div>

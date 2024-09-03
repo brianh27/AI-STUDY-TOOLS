@@ -7,6 +7,7 @@ import Puzzle from './puzzle.jsx'
 import NotFound from "./notFound.jsx"
 import Profile from "./profile.jsx"
 import Pixel from "./pixel.jsx"
+import Rush from './rush.jsx'
 function App() {
   return (
     <Router>
@@ -19,6 +20,7 @@ function App() {
           <Route path="/puzzle" element={<Puzzle />} />
           <Route path="/profile" element={<Profile/>} />
           <Route path="/pixel" element={<Pixel/>} />
+          <Route path="/rush/:mode" element={<Rush/>} />
           <Route path="/not-found" element={<NotFound/>} />
         </Routes>
       </div>

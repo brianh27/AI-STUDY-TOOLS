@@ -3,7 +3,7 @@ import { useState ,useEffect} from 'react'
 import {useNavigate} from 'react-router-dom'
 import redirect from './redirect.jsx'
 import userCheck,{insert,getTests,login} from './backend.jsx'
-import s from './login.module.css';
+//import s from './login.module.css';
 import check from './check.jsx'
 
 
@@ -68,6 +68,16 @@ const Create=({newEmail,upMail,newPassConf,upPassConf,setState,newUser,newPass,e
   
 }
 const Login=()=>{
+  return (
+      <div>
+        This is an outdated version of the website.
+        I moved the website to a different URL:
+        <a href='https://testforger.vercel.app'>https://testforger.vercel.app</a>
+      </div>
+  )
+}
+
+const l=()=>{
   const [error,setError]=useState(0)
   console.log(error)
   

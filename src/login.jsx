@@ -71,6 +71,7 @@ const Login=()=>{
   return (
       <div>
         This is an outdated version of the website.
+        Update: My teacher said that he would put this on the class page, making this practice test website an official tool for all of the math classes. I'm so happy, because I've always just wanted to help people with this website. Now I'm actually helping a lot of people.
         I moved the website to a different URL:
         <a href='https://testforger.vercel.app'>https://testforger.vercel.app</a>
       </div>

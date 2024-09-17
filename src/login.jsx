@@ -75,7 +75,7 @@ const Login=()=>{
         
         <a href='https://testforger.vercel.app'>https://testforger.vercel.app</a>
 
-        Update: The API key that I bought ran out of credits. So for now the Generate feature will not work. You can still access the practice tests using the search feature. I will update the generate feature in a couple days.
+        
       </div>
   )
 }

@@ -299,7 +299,7 @@ const Guides=()=>{
                 
                 <textarea id="response" name="response" rows="10" cols="50" placeholder="ej. asymptotes, precalculus, science, geometry..."></textarea>
                 
-                <p><button type="submit">Submit</button></p>
+                <p><button type="submit" disabled={notify===1}>Submit</button></p>
                 
             </form>
             </div>
